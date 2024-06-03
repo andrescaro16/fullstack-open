@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import phoneBookService from "./services/phoneBook";
 import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
@@ -9,10 +9,18 @@ const App = () => {
   const [personsToShow, setPersonsToShow] = useState(persons);
 
   useEffect(() => {
-    axios.get("http://localhost:3001/persons").then((response) => {
-      setPersons(response.data);
-    });
+    phoneBookService.getAll().then((persons) => setPersons(persons));
   }, []);
+
+  const deleteContact = (id, name) => {
+    if (window.confirm(`Sure you want to delete ${name}?`)) {
+      phoneBookService
+        .deletePerson(id)
+        .then((deletedContact) => {
+          setPersons(persons.filter((person) => person.id != deletedContact.id))
+        });
+    }
+  };
 
   return (
     <div>
@@ -21,7 +29,7 @@ const App = () => {
       <h2>Add a new</h2>
       <PersonForm persons={persons} setPersons={setPersons} />
       <h2>Numbers</h2>
-      <Persons personsToShow={personsToShow} />
+      <Persons personsToShow={personsToShow} deleteContact={deleteContact} />
     </div>
   );
 };

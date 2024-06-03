@@ -1,40 +1,70 @@
 import { useState } from "react";
+import phoneBookService from "../services/phoneBook";
 
 const PersonForm = ({ persons, setPersons }) => {
-  const [newName, setNewName] = useState("");
-  const [newNumber, setNewNumber] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    number: "",
+  });
 
-  const handleNameChange = (event) => {
-    setNewName(event.target.value);
-  };
-
-  const handleNumberChange = (event) => {
-    setNewNumber(event.target.value);
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const exists = persons.find((person) => person.name === newName);
-    !exists
-      ? setPersons(
-          persons.concat({
-            id: persons.length,
-            name: newName,
-            number: newNumber,
-          }),
+    const exists = persons.find((person) => person.name === formData?.name);
+
+    if (exists) {
+      if (
+        window.confirm(
+          `${formData?.name} is already added to phonebook, replace the old number with a new one?`,
         )
-      : alert(`${newName} is already added to phonebook`);
-    setNewName("");
-    setNewNumber("");
+      ) {
+        const data = {
+          ...formData,
+          id: exists.id,
+        };
+
+        phoneBookService
+          .putPerson(data)
+          .then((updatedPerson) =>
+            setPersons(
+              persons.map((person) =>
+                person.id != updatedPerson.id ? person : updatedPerson,
+              ),
+            ),
+          );
+      }
+    } else {
+      const data = {
+        ...formData,
+        id: (persons.length + 1).toString(),
+      };
+
+      phoneBookService
+        .postPerson(data)
+        .then((newPerson) => setPersons(persons.concat(newPerson)));
+    }
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <div>
-        name: <input value={newName} onChange={handleNameChange} />
+        name:{" "}
+        <input name="name" value={formData?.newName} onChange={handleChange} />
       </div>
       <div>
-        number: <input value={newNumber} onChange={handleNumberChange} />
+        number:{" "}
+        <input
+          name="number"
+          value={formData?.newNumber}
+          onChange={handleChange}
+        />
       </div>
       <div>
         <button type="submit">add</button>
