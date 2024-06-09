@@ -15,7 +15,7 @@ const PersonForm = ({ persons, setPersons, setError, setSuccess }) => {
     });
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const exists = persons.find((person) => person.name === formData?.name);
 
@@ -29,18 +29,15 @@ const PersonForm = ({ persons, setPersons, setError, setSuccess }) => {
           ...formData,
           id: exists.id,
         };
-
+    
         try {
-          phoneBookService
-            .putPerson(data)
-            .then((updatedPerson) =>
-              setPersons(
-                persons.map((person) =>
-                  person.id != updatedPerson.id ? person : updatedPerson,
-                ),
-              ),
-            );
-
+          const updatedPerson = await phoneBookService.putPerson(data);
+          setPersons(
+            persons.map((person) =>
+              person.id != updatedPerson.id ? person : updatedPerson,
+            ),
+          );
+    
           setSuccess(`'${data.name}' updated`);
           setTimeout(() => {
             setSuccess("");
@@ -59,9 +56,8 @@ const PersonForm = ({ persons, setPersons, setError, setSuccess }) => {
       };
 
       try {
-        phoneBookService
-          .postPerson(data)
-          .then((newPerson) => setPersons(persons.concat(newPerson)));
+        const postedPerson = await phoneBookService.postPerson(data);
+        setPersons(persons.concat(postedPerson));
 
         setSuccess(`'${data.name}' added`);
         setTimeout(() => {

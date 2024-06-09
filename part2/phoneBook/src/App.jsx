@@ -16,14 +16,14 @@ const App = () => {
     phoneBookService.getAll().then((persons) => setPersons(persons));
   }, []);
 
-  const deleteContact = (id, name) => {
+  const deleteContact = async (id, name) => {
     if (window.confirm(`Sure you want to delete ${name}?`)) {
       try {
-        phoneBookService.deletePerson(id).then((deletedContact) => {
-          setPersons(
-            persons.filter((person) => person.id != deletedContact.id),
-          );
-        });
+        const deletedContact = await phoneBookService.deletePerson(id);
+        setPersons(
+          persons.filter((person) => person.id != deletedContact.id),
+        );
+
         setSuccess(`Contact '${name}' deleted`);
         setTimeout(() => {
           setSuccess("");
