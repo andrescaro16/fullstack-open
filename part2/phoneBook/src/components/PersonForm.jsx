@@ -1,7 +1,7 @@
 import { useState } from "react";
 import phoneBookService from "../services/phoneBook";
 
-const PersonForm = ({ persons, setPersons }) => {
+const PersonForm = ({ persons, setPersons, setError, setSuccess }) => {
   const [formData, setFormData] = useState({
     name: "",
     number: "",
@@ -30,15 +30,27 @@ const PersonForm = ({ persons, setPersons }) => {
           id: exists.id,
         };
 
-        phoneBookService
-          .putPerson(data)
-          .then((updatedPerson) =>
-            setPersons(
-              persons.map((person) =>
-                person.id != updatedPerson.id ? person : updatedPerson,
+        try {
+          phoneBookService
+            .putPerson(data)
+            .then((updatedPerson) =>
+              setPersons(
+                persons.map((person) =>
+                  person.id != updatedPerson.id ? person : updatedPerson,
+                ),
               ),
-            ),
-          );
+            );
+
+          setSuccess(`'${data.name}' updated`);
+          setTimeout(() => {
+            setSuccess("");
+          }, 5000);
+        } catch {
+          setError(`Error trying to update the number of '${data.name}'`);
+          setTimeout(() => {
+            setError("");
+          }, 5000);
+        }
       }
     } else {
       const data = {
@@ -46,9 +58,21 @@ const PersonForm = ({ persons, setPersons }) => {
         id: (persons.length + 1).toString(),
       };
 
-      phoneBookService
-        .postPerson(data)
-        .then((newPerson) => setPersons(persons.concat(newPerson)));
+      try {
+        phoneBookService
+          .postPerson(data)
+          .then((newPerson) => setPersons(persons.concat(newPerson)));
+
+        setSuccess(`'${data.name}' added`);
+        setTimeout(() => {
+          setSuccess("");
+        }, 5000);
+      } catch {
+        setError(`Error trying to save '${data.name}' contact`);
+        setTimeout(() => {
+          setError("");
+        }, 5000);
+      }
     }
   };
 
